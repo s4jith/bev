@@ -1,6 +1,5 @@
 from pathlib import Path
 import json
-from collections import defaultdict
 
 DATA_ROOT = Path("DataSet/v1.0-mini")
 
@@ -37,22 +36,18 @@ def build_trajectories(sample_annotations, pedestrian_instances):
     trajectories = []
 
     for ann in sample_annotations:
-        token = ann['token']
-
-        if token in visited:
+        if ann['token'] in visited:
             continue
 
         if ann['instance_token'] not in pedestrian_instances:
             continue
 
-        # go to start of chain
         current = ann
         while current['prev'] != "":
             current = ann_lookup[current['prev']]
 
         traj = []
 
-        # traverse forward
         while current:
             visited.add(current['token'])
 
@@ -75,13 +70,13 @@ def create_windows(trajectories):
 
     for traj in trajectories:
         for i in range(len(traj) - 9):
+
+            # ---------------- MAIN TRAJECTORY ----------------
             window = traj[i:i+10]
 
-            # normalize
             x0, y0 = window[0]
             window = [[x - x0, y - y0] for x, y in window]
 
-            # compute velocity
             vel = []
             for j in range(len(window)):
                 if j == 0:
@@ -102,7 +97,49 @@ def create_windows(trajectories):
 
             future = window[4:10]
 
-            samples.append((obs, future))
+            # ---------------- NEIGHBORS ----------------
+            neighbors = []
+
+            for other_traj in trajectories:
+                if other_traj is traj:
+                    continue
+
+                if len(other_traj) < i + 4:
+                    continue
+
+                x1, y1 = traj[i + 3]
+                x2, y2 = other_traj[i + 3]
+
+                dist = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+
+                if dist < 5.0:  # 🔥 radius
+
+                    n_window = other_traj[i:i+4]
+
+                    x0_n, y0_n = n_window[0]
+                    n_window = [[x - x0_n, y - y0_n] for x, y in n_window]
+
+                    vel_n = []
+                    for j in range(len(n_window)):
+                        if j == 0:
+                            vel_n.append([0, 0])
+                        else:
+                            dx = n_window[j][0] - n_window[j-1][0]
+                            dy = n_window[j][1] - n_window[j-1][1]
+                            vel_n.append([dx, dy])
+
+                    n_obs = []
+                    for j in range(4):
+                        n_obs.append([
+                            n_window[j][0],
+                            n_window[j][1],
+                            vel_n[j][0],
+                            vel_n[j][1]
+                        ])
+
+                    neighbors.append(n_obs)
+
+            samples.append((obs, neighbors, future))
 
     return samples
 
@@ -125,13 +162,18 @@ def main():
     print("Creating training samples...")
     samples = create_windows(trajectories)
 
-    print(f"Total trajectories: {len(trajectories)}")
-    print(f"Total samples: {len(samples)}")
+    print("\n--- DEBUG ---")
+    obs, neighbors, future = samples[0]
 
-    # debug one sample
-    obs, future = samples[0]
-    print("OBS shape:", len(obs), len(obs[0]))
-    print("FUTURE shape:", len(future), len(future[0]))
+    print("Obs length:", len(obs))
+    print("Future length:", len(future))
+    print("Neighbors count:", len(neighbors))
+
+    if len(neighbors) > 0:
+        print("One neighbor shape:", len(neighbors[0]), len(neighbors[0][0]))
+
+    print(f"\nTotal trajectories: {len(trajectories)}")
+    print(f"Total samples: {len(samples)}")
 
 
 if __name__ == "__main__":

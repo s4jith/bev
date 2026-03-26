@@ -1,20 +1,31 @@
 import torch
 from torch.utils.data import DataLoader, random_split
-import torch.nn as nn
 import torch.optim as optim
 
-from data_loader import main as load_data
 from dataset import TrajectoryDataset
 from model import TrajectoryLSTM
+from data_loader import (
+    load_json, extract_pedestrian_instances,
+    build_trajectories, create_windows
+)
 
 
+# ----------------------------
+# CUSTOM COLLATE (IMPORTANT)
+# ----------------------------
+def collate_fn(batch):
+    obs, neighbors, future = zip(*batch)
+
+    obs = torch.stack(obs)
+    future = torch.stack(future)
+
+    return obs, list(neighbors), future
+
+
+# ----------------------------
+# LOAD DATA
+# ----------------------------
 def get_data():
-    # reuse your loader logic
-    from data_loader import (
-        load_json, extract_pedestrian_instances,
-        build_trajectories, create_windows
-    )
-
     sample_annotations = load_json("sample_annotation")
     instances = load_json("instance")
     categories = load_json("category")
@@ -29,6 +40,9 @@ def get_data():
     return samples
 
 
+# ----------------------------
+# METRICS
+# ----------------------------
 def compute_ade(pred, gt):
     return torch.mean(torch.norm(pred - gt, dim=2))
 
@@ -37,6 +51,26 @@ def compute_fde(pred, gt):
     return torch.mean(torch.norm(pred[:, -1] - gt[:, -1], dim=1))
 
 
+# ----------------------------
+# LOSS
+# ----------------------------
+def best_of_k_loss(pred, gt, probs):
+    gt = gt.unsqueeze(1)
+
+    error = torch.norm(pred - gt, dim=3).mean(dim=2)
+
+    min_error, best_idx = torch.min(error, dim=1)
+
+    traj_loss = torch.mean(min_error)
+
+    prob_loss = torch.nn.functional.cross_entropy(probs, best_idx)
+
+    return traj_loss + 0.5 * prob_loss
+
+
+# ----------------------------
+# TRAIN
+# ----------------------------
 def train():
     samples = get_data()
     dataset = TrajectoryDataset(samples)
@@ -46,20 +80,27 @@ def train():
 
     train_set, val_set = random_split(dataset, [train_size, val_size])
 
-    train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
-    val_loader = DataLoader(val_set, batch_size=64)
+    train_loader = DataLoader(
+        train_set, batch_size=64, shuffle=True, collate_fn=collate_fn
+    )
+
+    val_loader = DataLoader(
+        val_set, batch_size=64, collate_fn=collate_fn
+    )
 
     model = TrajectoryLSTM()
-    criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    best_ade = float("inf")
 
     for epoch in range(20):
         model.train()
         total_loss = 0
 
-        for obs, future in train_loader:
-            pred, probs = model(obs)
-            loss = best_of_k_loss(pred, future)
+        for obs, neighbors, future in train_loader:
+            pred, probs = model(obs, neighbors)
+
+            loss = best_of_k_loss(pred, future, probs)
 
             optimizer.zero_grad()
             loss.backward()
@@ -67,17 +108,17 @@ def train():
 
             total_loss += loss.item()
 
+        # ---------------- VALIDATION ----------------
         model.eval()
         ade, fde = 0, 0
 
         with torch.no_grad():
-            for obs, future in val_loader:
-                pred, _ = model(obs)
+            for obs, neighbors, future in val_loader:
+                pred, probs = model(obs, neighbors)
 
-                gt = future.unsqueeze(1)  # (B,1,6,2)
+                gt = future.unsqueeze(1)
 
-                error = torch.norm(pred - gt, dim=3).mean(dim=2)  # (B,K)
-
+                error = torch.norm(pred - gt, dim=3).mean(dim=2)
                 best_idx = torch.argmin(error, dim=1)
 
                 best_pred = pred[torch.arange(pred.size(0)), best_idx]
@@ -90,23 +131,12 @@ def train():
         print(f"ADE: {ade:.4f}, FDE: {fde:.4f}")
         print("-" * 40)
 
-    torch.save(model.state_dict(), "model_phase1.pth")
+        # Save best model
+        if ade < best_ade:
+            best_ade = ade
+            torch.save(model.state_dict(), "best_social_model.pth")
 
-
-def best_of_k_loss(pred, gt):
-    # pred: (B, K, 6, 2)
-    # gt: (B, 6, 2)
-
-    gt = gt.unsqueeze(1)  # (B, 1, 6, 2)
-
-    # compute error for each K
-    error = torch.norm(pred - gt, dim=3)  # (B, K, 6)
-    error = torch.mean(error, dim=2)      # (B, K)
-
-    # pick best trajectory
-    min_error, _ = torch.min(error, dim=1)
-
-    return torch.mean(min_error)
+    print("Training complete!")
 
 
 if __name__ == "__main__":

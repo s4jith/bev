@@ -6,7 +6,7 @@ from model import TrajectoryLSTM
 # LOAD MODEL
 # ----------------------------
 model = TrajectoryLSTM()
-model.load_state_dict(torch.load("model_phase1.pth", map_location="cpu"))
+model.load_state_dict(torch.load("best_social_model.pth", map_location="cpu"))
 model.eval()
 
 
@@ -14,12 +14,6 @@ model.eval()
 # PREPROCESS INPUT
 # ----------------------------
 def prepare_input(points):
-    """
-    points: list of (x, y)
-    returns: (4,4) → [x, y, dx, dy]
-    """
-
-    # normalize
     x0, y0 = points[0]
     norm = [(x - x0, y - y0) for x, y in points]
 
@@ -40,18 +34,17 @@ def prepare_input(points):
 # PREDICTION FUNCTION
 # ----------------------------
 def predict(points):
-    """
-    points: list of (x, y) → length must be 4
-    """
-
     obs, origin = prepare_input(points)
 
     obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)  # (1,4,4)
 
-    with torch.no_grad():
-        pred, probs = model(obs)
+    # 🔥 IMPORTANT: empty neighbors for inference
+    neighbors = [[]]  # batch size = 1
 
-    pred = pred.squeeze(0)   # (K,6,2)
+    with torch.no_grad():
+        pred, probs = model(obs, neighbors)
+
+    pred = pred.squeeze(0)
     probs = probs.squeeze(0)
 
     # convert back to real coordinates
@@ -69,7 +62,6 @@ def predict(points):
 # ----------------------------
 if __name__ == "__main__":
 
-    # Example input (your format)
     points = [
         (2, 3),
         (3, 3),
