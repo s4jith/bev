@@ -123,7 +123,7 @@ def train():
 
     best_ade = float("inf")
 
-    for epoch in range(20):
+    for epoch in range(50): # Increased from 20 to 50 for hackathon max performance
         model.train()
         total_loss = 0
 

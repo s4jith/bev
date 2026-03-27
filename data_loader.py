@@ -23,7 +23,8 @@ def extract_pedestrian_instances(sample_annotations, instances, categories):
         inst = inst_lookup[ann['instance_token']]
         category = cat_lookup[inst['category_token']]['name']
 
-        if "pedestrian" in category:
+        # Include pedestrians, bicycles, and motorcycles (Vulnerable Road Users)
+        if "pedestrian" in category or "bicycle" in category or "motorcycle" in category:
             pedestrian_instances.add(ann['instance_token'])
 
     return pedestrian_instances

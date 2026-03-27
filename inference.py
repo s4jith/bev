@@ -121,10 +121,10 @@ def predict(points, neighbor_points_list=None):
 if __name__ == "__main__":
 
     points = [
-        (2, 3),
-        (3, 3),
-        (4, 3),
-        (5, 3)
+        (0, 0),
+        (10, 0),
+        (20, 0),
+        (30, 0)
     ]
 
     pred, probs = predict(points)

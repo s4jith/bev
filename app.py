@@ -4,11 +4,14 @@ from visualization import plot_scene
 
 st.set_page_config(page_title="Hackathon Demo: Trajectory Prediction", layout="wide")
 
-st.title("🚗 Social-Aware Multi-Modal Trajectory Prediction")
+st.title("🚗 High-Speed VRU Safety Predictor (6-Second Demo)")
 st.markdown("""
-Welcome to the interactive demo! This model looks at 2 seconds of past pedestrian motion, and predicts 3 distinct potential future paths for the next 3 seconds. 
+Welcome to the interactive highway-scale demo! 
+Our Ego Vehicle is driving at high speeds, which means it requires **long-range foresight** to prevent emergencies. 
 
-It uses an **Attention Mechanism** to "look" at neighboring pedestrians to adjust its predictions and avoid collisions.
+This model tracks **Vulnerable Road Users (Pedestrians, Cyclists, Motorcycles)** using 2 seconds of history, and predicts 3 distinct potential future paths **6 seconds (12 timesteps)** into the future. 
+
+It evaluates everything within a massive **50-meter radius** to calculate attention weights and prevent collisions before they happen.
 """)
 
 st.sidebar.header("Scenario Configuration")
@@ -21,35 +24,35 @@ scenario = st.sidebar.selectbox("Select a Demo Scenario", [
 ])
 
 # Base configuration for main pedestrian
-main_pedestrian = [(2, 3), (3, 3), (4, 3), (5, 3)]
+main_pedestrian = [(0, 0), (10, 0), (20, 0), (30, 0)]
 neighbors = []
 
 if scenario == "Clean Straight Path (No interaction)":
-    st.markdown("### Scenario: Clear Path")
-    st.info("The pedestrian is walking straight with no neighboring individuals. The model predicts they will continue straightforward with slight deviations.")
+    st.markdown("### Scenario: Clear Highway")
+    st.info("The target cyclist is moving straight with no obstacles.")
 
 elif scenario == "Approaching Neighbor (Social impact)":
-    st.markdown("### Scenario: Approaching Neighbor")
-    st.info("Notice how the pedestrian avoids the neighbor walking head-on towards them!")
-    # Neighbor moving left from top right, towards the target's future path
-    neighbors = [[(8, 5), (7, 4), (6, 3), (5, 2)]]
+    st.markdown("### Scenario: Emergency Avoidance")
+    st.info("Notice how the target reacts to an object 50 meters ahead.")
+    # Neighbor moving much slower ahead
+    neighbors = [[(80, 5), (80, 5), (80, 5), (80, 5)]]
 
 elif scenario == "Crowded Scene":
-    st.markdown("### Scenario: Crowded Interaction")
-    st.info("Multiple people navigating the space. Look at the variable attention thicknesses!")
+    st.markdown("### Scenario: VRU Crowded Traffic")
+    st.info("Multiple pedestrians or cyclists navigating a 100-meter stretch.")
     neighbors = [
-        [(8, 5), (7, 4), (6, 3), (5, 2)],   # Close interaction
-        [(1, 1), (1, 2), (1, 3), (1, 4)],   # Behind, moving up
-        [(3, 7), (4, 7), (5, 7), (6, 7)]    # Moving parallel but far away
+        [(80, 5), (82, 5), (84, 5), (86, 5)],   # Slow car ahead
+        [(10, -5), (25, -5), (40, -5), (55, -5)],   # Fast overtaking car from behind
+        [(50, 10), (55, 10), (60, 10), (65, 10)]    # Car far parallel
     ]
 
 elif scenario == "Custom Coordinate Input":
     st.markdown("### Scenario: Custom Coordinate Input")
     st.info("Provide exactly 4 historical (x,y) points for the pedestrian. The last point is the current position (t=0). Format: x,y separated by semicolons.")
     
-    st.markdown("**Example Custom Setup:**")
-    raw_main = st.text_input("Main Pedestrian Points (t=-3, t=-2, t=-1, t=0)", "2,3; 3,3; 4,3; 5,3")
-    raw_neighbors = st.text_area("Neighbor Points (One neighbor per line)", "8,5; 7,4; 6,3; 5,2\n3,7; 4,7; 5,7; 6,7")
+    st.markdown("**Example High-Speed Custom Setup:**")
+    raw_main = st.text_input("Target VRU Points (t=-3, t=-2, t=-1, t=0)", "0,0; 10,0; 20,0; 30,0")
+    raw_neighbors = st.text_area("Neighbor Points (One neighbor per line)", "80,5; 82,5; 84,5; 86,5\n50,10; 55,10; 60,10; 65,10")
     
     try:
         parsed_main = []
@@ -83,7 +86,8 @@ elif scenario == "Custom Coordinate Input":
 # Tweak target speed optionally in sidebar
 if scenario != "Custom Coordinate Input":
     speed_multiplier = st.sidebar.slider("Target Speed Multiplier", min_value=0.5, max_value=2.0, value=1.0)
-    adjusted_main = [(2, 3), (2 + 1*speed_multiplier, 3), (2 + 2*speed_multiplier, 3), (2 + 3*speed_multiplier, 3)]
+    # Start at x=0, step by 10m * speed multiplier each timestep (2 Hz means 10m/0.5s = 20m/s = ~72 km/h)
+    adjusted_main = [(0, 0), (10*speed_multiplier, 0), (20*speed_multiplier, 0), (30*speed_multiplier, 0)]
 else:
     adjusted_main = main_pedestrian
 
