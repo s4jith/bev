@@ -1,0 +1,516 @@
+Starting training on cuda...
+Epoch 1
+Train Loss: 178.0665
+ADE: 14.8730, FDE: 30.6128
+----------------------------------------
+New best model found! ADE improved from inf to 14.8730
+Current Learning Rate: 0.001
+Epoch 2
+Train Loss: 103.3251
+ADE: 7.9080, FDE: 15.9898
+----------------------------------------
+New best model found! ADE improved from 14.8730 to 7.9080
+Current Learning Rate: 0.001
+Epoch 3
+Train Loss: 84.8401
+ADE: 6.7514, FDE: 12.5111
+----------------------------------------
+New best model found! ADE improved from 7.9080 to 6.7514
+Current Learning Rate: 0.001
+Epoch 4
+Train Loss: 78.1605
+ADE: 6.1568, FDE: 11.9070
+----------------------------------------
+New best model found! ADE improved from 6.7514 to 6.1568
+Current Learning Rate: 0.001
+Epoch 5
+Train Loss: 79.7916
+ADE: 6.8216, FDE: 12.9249
+----------------------------------------
+Current Learning Rate: 0.001
+Epoch 6
+Train Loss: 78.6913
+ADE: 7.3860, FDE: 13.7454
+----------------------------------------
+Current Learning Rate: 0.001
+Epoch 7
+Train Loss: 78.6362
+ADE: 6.5099, FDE: 12.5847
+----------------------------------------
+Current Learning Rate: 0.001
+Epoch 8
+Train Loss: 76.4749
+ADE: 6.8701, FDE: 13.2578
+----------------------------------------
+Current Learning Rate: 0.001
+Epoch 9
+Train Loss: 74.3838
+ADE: 7.0580, FDE: 13.5877
+----------------------------------------
+Current Learning Rate: 0.001
+Epoch 10
+Train Loss: 73.5129
+ADE: 6.3784, FDE: 12.3774
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 11
+Train Loss: 70.3930
+ADE: 6.0025, FDE: 11.8645
+----------------------------------------
+New best model found! ADE improved from 6.1568 to 6.0025
+Current Learning Rate: 0.0005
+Epoch 12
+Train Loss: 68.2785
+ADE: 6.0088, FDE: 11.8060
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 13
+Train Loss: 67.9592
+ADE: 5.6913, FDE: 11.2057
+----------------------------------------
+New best model found! ADE improved from 6.0025 to 5.6913
+Current Learning Rate: 0.0005
+Epoch 14
+Train Loss: 70.3109
+ADE: 5.4938, FDE: 10.9932
+----------------------------------------
+New best model found! ADE improved from 5.6913 to 5.4938
+Current Learning Rate: 0.0005
+Epoch 15
+Train Loss: 65.8945
+ADE: 5.7227, FDE: 11.4231
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 16
+Train Loss: 64.8240
+ADE: 5.3564, FDE: 10.6837
+----------------------------------------
+New best model found! ADE improved from 5.4938 to 5.3564
+Current Learning Rate: 0.0005
+Epoch 17
+Train Loss: 63.9325
+ADE: 5.6435, FDE: 11.0662
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 18
+Train Loss: 64.2430
+ADE: 5.4057, FDE: 10.8020
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 19
+Train Loss: 63.6297
+ADE: 6.1586, FDE: 12.1153
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 20
+Train Loss: 62.7015
+ADE: 5.9521, FDE: 11.6413
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 21
+Train Loss: 64.2593
+ADE: 5.6752, FDE: 11.1449
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 22
+Train Loss: 62.1326
+ADE: 5.2602, FDE: 10.4284
+----------------------------------------
+New best model found! ADE improved from 5.3564 to 5.2602
+Current Learning Rate: 0.0005
+Epoch 23
+Train Loss: 61.4248
+ADE: 5.7255, FDE: 11.3243
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 24
+Train Loss: 61.4437
+ADE: 5.1518, FDE: 10.1939
+----------------------------------------
+New best model found! ADE improved from 5.2602 to 5.1518
+Current Learning Rate: 0.0005
+Epoch 25
+Train Loss: 58.8833
+ADE: 5.2271, FDE: 10.3007
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 26
+Train Loss: 61.0641
+ADE: 5.5618, FDE: 11.1337
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 27
+Train Loss: 61.2925
+ADE: 5.3057, FDE: 10.5152
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 28
+Train Loss: 60.5781
+ADE: 4.8531, FDE: 9.6062
+----------------------------------------
+New best model found! ADE improved from 5.1518 to 4.8531
+Current Learning Rate: 0.0005
+Epoch 29
+Train Loss: 60.9280
+ADE: 4.9254, FDE: 9.6131
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 30
+Train Loss: 58.8464
+ADE: 5.0846, FDE: 10.1289
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 31
+Train Loss: 60.7229
+ADE: 4.9462, FDE: 9.7286
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 32
+Train Loss: 60.2163
+ADE: 5.6103, FDE: 10.8256
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 33
+Train Loss: 61.7361
+ADE: 5.3240, FDE: 10.5383
+----------------------------------------
+Current Learning Rate: 0.0005
+Epoch 34
+Train Loss: 61.5896
+ADE: 5.2611, FDE: 10.3253
+----------------------------------------
+Current Learning Rate: 0.00025
+Epoch 35
+Train Loss: 58.7435
+ADE: 4.8083, FDE: 9.5813
+----------------------------------------
+New best model found! ADE improved from 4.8531 to 4.8083
+Current Learning Rate: 0.00025
+Epoch 36
+Train Loss: 57.7691
+ADE: 4.8820, FDE: 9.6234
+----------------------------------------
+Current Learning Rate: 0.00025
+Epoch 37
+Train Loss: 56.9117
+ADE: 4.6813, FDE: 9.3742
+----------------------------------------
+New best model found! ADE improved from 4.8083 to 4.6813
+Current Learning Rate: 0.00025
+Epoch 38
+Train Loss: 56.7262
+ADE: 4.7337, FDE: 9.3544
+----------------------------------------
+Current Learning Rate: 0.00025
+Epoch 39
+Train Loss: 55.4782
+ADE: 4.8206, FDE: 9.6178
+----------------------------------------
+Current Learning Rate: 0.00025
+Epoch 40
+Train Loss: 56.2314
+ADE: 4.8793, FDE: 9.6051
+----------------------------------------
+Current Learning Rate: 0.00025
+Epoch 41
+Train Loss: 56.1507
+ADE: 5.0856, FDE: 10.0946
+----------------------------------------
+Current Learning Rate: 0.00025
+Epoch 42
+Train Loss: 56.0816
+ADE: 4.9876, FDE: 9.8607
+----------------------------------------
+Current Learning Rate: 0.00025
+Epoch 43
+Train Loss: 56.8475
+ADE: 4.8283, FDE: 9.6424
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 44
+Train Loss: 57.4861
+ADE: 4.6677, FDE: 9.1561
+----------------------------------------
+New best model found! ADE improved from 4.6813 to 4.6677
+Current Learning Rate: 0.000125
+Epoch 45
+Train Loss: 56.0794
+ADE: 4.7480, FDE: 9.5435
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 46
+Train Loss: 55.3259
+ADE: 4.6398, FDE: 9.2096
+----------------------------------------
+New best model found! ADE improved from 4.6677 to 4.6398
+Current Learning Rate: 0.000125
+Epoch 47
+Train Loss: 57.0713
+ADE: 4.6021, FDE: 9.1527
+----------------------------------------
+New best model found! ADE improved from 4.6398 to 4.6021
+Current Learning Rate: 0.000125
+Epoch 48
+Train Loss: 54.8949
+ADE: 4.5780, FDE: 9.1422
+----------------------------------------
+New best model found! ADE improved from 4.6021 to 4.5780
+Current Learning Rate: 0.000125
+Epoch 49
+Train Loss: 55.2318
+ADE: 4.6337, FDE: 9.1839
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 50
+Train Loss: 54.4131
+ADE: 4.5016, FDE: 8.9322
+----------------------------------------
+New best model found! ADE improved from 4.5780 to 4.5016
+Current Learning Rate: 0.000125
+Epoch 51
+Train Loss: 54.9472
+ADE: 4.6412, FDE: 9.1386
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 52
+Train Loss: 54.5797
+ADE: 4.6448, FDE: 9.2249
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 53
+Train Loss: 55.0145
+ADE: 4.6076, FDE: 9.1880
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 54
+Train Loss: 56.0657
+ADE: 4.5065, FDE: 8.9377
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 55
+Train Loss: 54.6315
+ADE: 4.6884, FDE: 9.3107
+----------------------------------------
+Current Learning Rate: 0.000125
+Epoch 56
+Train Loss: 55.5134
+ADE: 4.5046, FDE: 8.9316
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 57
+Train Loss: 54.3246
+ADE: 4.5759, FDE: 9.0543
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 58
+Train Loss: 54.3908
+ADE: 4.5168, FDE: 9.0593
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 59
+Train Loss: 55.1115
+ADE: 4.5278, FDE: 9.0581
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 60
+Train Loss: 53.6431
+ADE: 4.5208, FDE: 9.0486
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 61
+Train Loss: 54.2667
+ADE: 4.4950, FDE: 8.9272
+----------------------------------------
+New best model found! ADE improved from 4.5016 to 4.4950
+Current Learning Rate: 6.25e-05
+Epoch 62
+Train Loss: 56.0329
+ADE: 4.4291, FDE: 8.8037
+----------------------------------------
+New best model found! ADE improved from 4.4950 to 4.4291
+Current Learning Rate: 6.25e-05
+Epoch 63
+Train Loss: 54.1515
+ADE: 4.4563, FDE: 8.8681
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 64
+Train Loss: 54.3478
+ADE: 4.4694, FDE: 8.9239
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 65
+Train Loss: 54.3360
+ADE: 4.4561, FDE: 8.9341
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 66
+Train Loss: 54.7145
+ADE: 4.4247, FDE: 8.8370
+----------------------------------------
+New best model found! ADE improved from 4.4291 to 4.4247
+Current Learning Rate: 6.25e-05
+Epoch 67
+Train Loss: 53.5636
+ADE: 4.4782, FDE: 8.9174
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 68
+Train Loss: 54.2253
+ADE: 4.3913, FDE: 8.8448
+----------------------------------------
+New best model found! ADE improved from 4.4247 to 4.3913
+Current Learning Rate: 6.25e-05
+Epoch 69
+Train Loss: 53.7314
+ADE: 4.5158, FDE: 9.0818
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 70
+Train Loss: 54.0699
+ADE: 4.4618, FDE: 8.9522
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 71
+Train Loss: 53.6991
+ADE: 4.4756, FDE: 8.8925
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 72
+Train Loss: 53.7853
+ADE: 4.5407, FDE: 9.1811
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 73
+Train Loss: 54.5524
+ADE: 4.4940, FDE: 9.0577
+----------------------------------------
+Current Learning Rate: 6.25e-05
+Epoch 74
+Train Loss: 53.8972
+ADE: 4.5190, FDE: 9.0534
+----------------------------------------
+Current Learning Rate: 3.125e-05
+Epoch 75
+Train Loss: 53.3935
+ADE: 4.4587, FDE: 8.9764
+----------------------------------------
+Current Learning Rate: 3.125e-05
+Epoch 76
+Train Loss: 53.1893
+ADE: 4.4545, FDE: 8.9351
+----------------------------------------
+Current Learning Rate: 3.125e-05
+Epoch 77
+Train Loss: 53.8166
+ADE: 4.4406, FDE: 8.9743
+----------------------------------------
+Current Learning Rate: 3.125e-05
+Epoch 78
+Train Loss: 53.6539
+ADE: 4.3961, FDE: 8.8697
+----------------------------------------
+Current Learning Rate: 3.125e-05
+Epoch 79
+Train Loss: 53.7902
+ADE: 4.4301, FDE: 8.9741
+----------------------------------------
+Current Learning Rate: 3.125e-05
+Epoch 80
+Train Loss: 53.5298
+ADE: 4.4600, FDE: 8.9988
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 81
+Train Loss: 54.5404
+ADE: 4.4186, FDE: 8.9043
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 82
+Train Loss: 54.4844
+ADE: 4.4144, FDE: 8.8771
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 83
+Train Loss: 53.6891
+ADE: 4.3881, FDE: 8.8032
+----------------------------------------
+New best model found! ADE improved from 4.3913 to 4.3881
+Current Learning Rate: 1.5625e-05
+Epoch 84
+Train Loss: 53.6506
+ADE: 4.4299, FDE: 8.9467
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 85
+Train Loss: 53.6650
+ADE: 4.4089, FDE: 8.8543
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 86
+Train Loss: 55.7171
+ADE: 4.3926, FDE: 8.8086
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 87
+Train Loss: 55.5776
+ADE: 4.4173, FDE: 8.8600
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 88
+Train Loss: 53.1944
+ADE: 4.4036, FDE: 8.8759
+----------------------------------------
+Current Learning Rate: 1.5625e-05
+Epoch 89
+Train Loss: 52.9812
+ADE: 4.4084, FDE: 8.9131
+----------------------------------------
+Current Learning Rate: 7.8125e-06
+Epoch 90
+Train Loss: 53.3044
+ADE: 4.4143, FDE: 8.9439
+----------------------------------------
+Current Learning Rate: 7.8125e-06
+Epoch 91
+Train Loss: 53.2489
+ADE: 4.4242, FDE: 8.9714
+----------------------------------------
+Current Learning Rate: 7.8125e-06
+Epoch 92
+Train Loss: 53.9043
+ADE: 4.4201, FDE: 8.9614
+----------------------------------------
+Current Learning Rate: 7.8125e-06
+Epoch 93
+Train Loss: 54.7911
+ADE: 4.4192, FDE: 8.9166
+----------------------------------------
+Current Learning Rate: 7.8125e-06
+Epoch 94
+Train Loss: 52.8487
+ADE: 4.4225, FDE: 8.9604
+----------------------------------------
+Current Learning Rate: 7.8125e-06
+Epoch 95
+Train Loss: 53.3386
+ADE: 4.4322, FDE: 8.9842
+----------------------------------------
+Current Learning Rate: 3.90625e-06
+Epoch 96
+Train Loss: 53.0110
+ADE: 4.4341, FDE: 8.9745
+----------------------------------------
+Current Learning Rate: 3.90625e-06
+Epoch 97
+Train Loss: 53.3617
+ADE: 4.4362, FDE: 8.9932
+----------------------------------------
+Current Learning Rate: 3.90625e-06
+Epoch 98
+Train Loss: 53.7959
+ADE: 4.4414, FDE: 8.9840
+----------------------------------------
+Current Learning Rate: 3.90625e-06
+Early stopping triggered! No improvement for 15 epochs.
+Training complete!

@@ -101,29 +101,38 @@ def train():
         with open(log_filename, "a") as f:
             f.write(msg + "\n")
 
+    import random
     log_print(f"Starting training on {device}...")
     samples = get_data()
-    dataset = TrajectoryDataset(samples)
+    
+    # Deterministic split as promised
+    random.seed(42)
+    random.shuffle(samples)
 
-    train_size = int(0.8 * len(dataset))
-    val_size = len(dataset) - train_size
+    train_size = int(0.8 * len(samples))
+    train_samples = samples[:train_size]
+    val_samples = samples[train_size:]
 
-    train_set, val_set = random_split(dataset, [train_size, val_size])
+    train_dataset = TrajectoryDataset(train_samples, augment=True)
+    val_dataset = TrajectoryDataset(val_samples, augment=False)
 
     train_loader = DataLoader(
-        train_set, batch_size=64, shuffle=True, collate_fn=collate_fn
+        train_dataset, batch_size=64, shuffle=True, collate_fn=collate_fn
     )
 
     val_loader = DataLoader(
-        val_set, batch_size=64, collate_fn=collate_fn
+        val_dataset, batch_size=64, collate_fn=collate_fn
     )
 
     model = TrajectoryTransformer().to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
 
     best_ade = float("inf")
+    patience_counter = 0
+    max_patience = 15
 
-    for epoch in range(50): # Increased from 20 to 50 for hackathon max performance
+    for epoch in range(100): # Increased to 100 max epochs with early stopping
         model.train()
         total_loss = 0
 
@@ -168,6 +177,18 @@ def train():
             log_print(f"New best model found! ADE improved from {best_ade:.4f} to {ade:.4f}")
             best_ade = ade
             torch.save(model.state_dict(), "best_social_model.pth")
+            patience_counter = 0
+        else:
+            patience_counter += 1
+            
+        # Update Learning Rate
+        scheduler.step(ade)
+        current_lr = optimizer.param_groups[0]['lr']
+        log_print(f"Current Learning Rate: {current_lr}")
+        
+        if patience_counter >= max_patience:
+            log_print(f"Early stopping triggered! No improvement for {max_patience} epochs.")
+            break
 
     log_print("Training complete!")
 
