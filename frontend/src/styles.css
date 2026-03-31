@@ -259,6 +259,39 @@ input[type="range"] {
   font-size: 0.84rem;
 }
 
+.vru-text-card {
+  grid-column: 1 / -1;
+}
+
+.vru-note {
+  margin: 0 0 8px;
+  color: #c5d4e8;
+  font-size: 0.78rem;
+}
+
+.vru-text-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vru-text-item {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+  padding: 6px 0 8px;
+}
+
+.vru-text-item h4 {
+  margin: 0 0 5px;
+  font-size: 0.84rem;
+  color: #fde68a;
+}
+
+.vru-text-item p {
+  margin: 2px 0;
+  color: #d6e3f3;
+  font-size: 0.8rem;
+}
+
 .camera-panel {
   margin-top: 14px;
   border: 1px solid rgba(148, 163, 184, 0.3);

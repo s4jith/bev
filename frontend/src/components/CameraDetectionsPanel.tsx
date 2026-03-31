@@ -7,6 +7,8 @@ type Props = {
   detections?: Record<string, DetectionSnapshot>;
   prevImagePreview?: string | null;
   currImagePreview?: string | null;
+  vruDisplayIdByTrackId?: Record<number, number>;
+  targetTrackId?: number | null;
 };
 
 type FrameCard = {
@@ -66,6 +68,23 @@ function normalizeBox(box: DetectionItem["box"]): [number, number, number, numbe
   return [left, top, right, bottom];
 }
 
+function isVruDetection(det: DetectionItem): boolean {
+  const kind = (det.kind ?? "").toLowerCase();
+  const raw = (det.raw_label ?? "").toLowerCase();
+  if (kind === "pedestrian") {
+    return true;
+  }
+  return raw === "person" || raw === "pedestrian" || raw === "bicycle" || raw === "cyclist";
+}
+
+function vruLabel(det: DetectionItem): string {
+  const raw = (det.raw_label ?? "").toLowerCase();
+  if (raw === "bicycle" || raw === "cyclist") {
+    return "Cyclist";
+  }
+  return "Pedestrian";
+}
+
 function frameImageSource(
   key: string,
   snap: DetectionSnapshot,
@@ -90,7 +109,19 @@ function frameImageSource(
   return { sourceLabel: "no preview source" };
 }
 
-function OverlayFrame({ card, minScore, showLabels }: { card: FrameCard; minScore: number; showLabels: boolean }) {
+function OverlayFrame({
+  card,
+  minScore,
+  showLabels,
+  vruDisplayIdByTrackId,
+  targetTrackId
+}: {
+  card: FrameCard;
+  minScore: number;
+  showLabels: boolean;
+  vruDisplayIdByTrackId?: Record<number, number>;
+  targetTrackId?: number | null;
+}) {
   const [imageSize, setImageSize] = useState<ImageSize | null>(null);
   const [imageError, setImageError] = useState(false);
 
@@ -99,6 +130,8 @@ function OverlayFrame({ card, minScore, showLabels }: { card: FrameCard; minScor
     .filter((item) => item.box !== null);
 
   const visibleDetections = validDetections.filter((item) => item.score >= minScore);
+  const totalVruCount = card.detections.filter((det) => isVruDetection(det)).length;
+  const shownVruCount = visibleDetections.filter((item) => isVruDetection(item.det)).length;
 
   return (
     <article className="camera-card">
@@ -135,10 +168,26 @@ function OverlayFrame({ card, minScore, showLabels }: { card: FrameCard; minScor
                 const [x1, y1, x2, y2] = box as [number, number, number, number];
                 const boxWidth = Math.max(1, x2 - x1);
                 const boxHeight = Math.max(1, y2 - y1);
-                const color = detectionColor(det.kind);
+                const isTarget = targetTrackId !== null && targetTrackId !== undefined && det.track_id === targetTrackId;
+                const color = isTarget ? "#f97316" : detectionColor(det.kind);
                 const confidenceText = `${(score * 100).toFixed(0)}%`;
-                const idTag = det.track_id !== undefined && det.track_id !== null ? `ID ${det.track_id}` : `D${index + 1}`;
-                const label = `${idTag} ${det.kind ?? det.raw_label ?? "object"} ${confidenceText}`;
+                const isVru = isVruDetection(det);
+                const mappedDisplayId = det.track_id !== undefined && det.track_id !== null ? vruDisplayIdByTrackId?.[det.track_id] : undefined;
+
+                let label: string;
+                if (isVru) {
+                  const actor = vruLabel(det);
+                  const idText = mappedDisplayId !== undefined
+                    ? `ID ${mappedDisplayId}`
+                    : det.track_id !== undefined && det.track_id !== null
+                      ? `ID ${det.track_id}`
+                      : `D${index + 1}`;
+                  const prefix = isTarget ? `TARGET ${actor}` : actor;
+                  label = `${prefix} ${idText} ${confidenceText}`;
+                } else {
+                  const idTag = det.track_id !== undefined && det.track_id !== null ? `TRK ${det.track_id}` : `D${index + 1}`;
+                  label = `${idTag} ${det.kind ?? det.raw_label ?? "object"} ${confidenceText}`;
+                }
 
                 return (
                   <g key={`${card.key}-box-${index}`}>
@@ -170,14 +219,20 @@ function OverlayFrame({ card, minScore, showLabels }: { card: FrameCard; minScor
       )}
 
       <footer>
-        <span>Detections: {card.detections.length}</span>
-        <span>Shown: {visibleDetections.length}</span>
+        <span>Detections (all): {card.detections.length}</span>
+        <span>Ped/Cyc shown: {shownVruCount}/{totalVruCount}</span>
       </footer>
     </article>
   );
 }
 
-export default function CameraDetectionsPanel({ detections, prevImagePreview, currImagePreview }: Props) {
+export default function CameraDetectionsPanel({
+  detections,
+  prevImagePreview,
+  currImagePreview,
+  vruDisplayIdByTrackId,
+  targetTrackId
+}: Props) {
   const [minScore, setMinScore] = useState(0.35);
   const [showLabels, setShowLabels] = useState(true);
   const [cameraFilter, setCameraFilter] = useState("all");
@@ -210,7 +265,7 @@ export default function CameraDetectionsPanel({ detections, prevImagePreview, cu
 
   const shownCount = useMemo(() => {
     return filteredCards.reduce((acc, card) => {
-      const count = card.detections.filter((det) => normalizedScore(det.score) >= minScore).length;
+      const count = card.detections.filter((det) => normalizedScore(det.score) >= minScore && isVruDetection(det)).length;
       return acc + count;
     }, 0);
   }, [filteredCards, minScore]);
@@ -257,14 +312,21 @@ export default function CameraDetectionsPanel({ detections, prevImagePreview, cu
             Show labels
           </label>
 
-          <p className="camera-toolbar-stats">Visible boxes: {shownCount}</p>
+          <p className="camera-toolbar-stats">Visible pedestrian/cyclist boxes: {shownCount}</p>
         </div>
       )}
 
       {filteredCards.length > 0 ? (
         <div className="camera-grid">
           {filteredCards.map((card) => (
-            <OverlayFrame key={card.key} card={card} minScore={minScore} showLabels={showLabels} />
+            <OverlayFrame
+              key={card.key}
+              card={card}
+              minScore={minScore}
+              showLabels={showLabels}
+              vruDisplayIdByTrackId={vruDisplayIdByTrackId}
+              targetTrackId={targetTrackId}
+            />
           ))}
         </div>
       ) : (

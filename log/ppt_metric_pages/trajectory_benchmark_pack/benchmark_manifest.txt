@@ -1,0 +1,17 @@
+Output directory: D:\Github\bev\log\ppt_metric_pages\trajectory_benchmark_pack
+
+Generated pages:
+- 01_minade_at3.png
+- 02_minfde_at3.png
+- 03_miss_rate_gt_2m.png
+- 04_detection_latency.png
+- 05_transformer_predict_latency.png
+- 06_end_to_end_cycle.png
+- 07_end_to_end_fps.png
+- 08_precision_estimated_chart.png
+- 09_recall_estimated_chart.png
+- 10_f1_estimated_chart.png
+- 11_map_0_5_estimated_chart.png
+- 12_map_0_5_0_95_estimated_chart.png
+- 13_iou_estimated_chart.png
+- 14_latency_share_breakdown.png

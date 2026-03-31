@@ -77,6 +77,127 @@
 				"Push-Location frontend; npm run build; Pop-Location"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "frontend-build-check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location frontend; npm run build; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "frontend-build-check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location frontend; npm run build; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "frontend-build-check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location frontend; npm run build; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-metric-pages",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_metric_pages.py --log-file log\\phase2_fusion_train_20260330_115434.txt --include-missing-pages; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-metric-pages",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_metric_pages.py --log-file log\\phase2_fusion_train_20260330_115434.txt --include-missing-pages; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-metric-pages",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_metric_pages.py --log-file log\\phase2_fusion_train_20260330_115434.txt --include-missing-pages; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-benchmark-metric-pages",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_benchmark_metric_pages.py; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-benchmark-metric-pages",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_benchmark_metric_pages.py; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-benchmark-metric-pages",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_benchmark_metric_pages.py; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-benchmark-metric-pages-best",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_benchmark_metric_pages.py --preset best; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "generate-benchmark-metric-pages-best",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location .; .\\venv\\Scripts\\python.exe backend\\scripts\\tools\\generate_benchmark_metric_pages.py --preset best; Pop-Location"
+			],
+			"isBackground": false
 		}
 	]
 }

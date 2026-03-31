@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import type { AgentState, Point2D, SceneElement, SceneGeometry } from "../types";
+import type { AgentState, Point2D, SceneGeometry } from "../types";
 
 type Props = {
   agents: AgentState[];
@@ -17,36 +17,12 @@ type Bounds = {
 const WIDTH = 880;
 const HEIGHT = 560;
 
-function clamp01(v: number): number {
-  return Math.min(1, Math.max(0, v));
-}
-
-function collectPoints(agents: AgentState[], sceneGeometry?: SceneGeometry): Point2D[] {
+function collectPoints(agents: AgentState[]): Point2D[] {
   const pts: Point2D[] = [{ x: 0, y: 0 }];
   for (const agent of agents) {
     pts.push(...agent.history);
     for (const mode of agent.predictions) {
       pts.push(...mode);
-    }
-  }
-
-  if (sceneGeometry) {
-    pts.push(...sceneGeometry.road_polygon);
-    for (const lane of sceneGeometry.lane_lines) {
-      pts.push(...lane);
-    }
-    for (const el of sceneGeometry.elements ?? []) {
-      pts.push(...el.polygon);
-    }
-
-    const mapBounds = sceneGeometry.map_layer?.bounds;
-    if (mapBounds) {
-      pts.push(
-        { x: mapBounds.min_x, y: mapBounds.min_y },
-        { x: mapBounds.max_x, y: mapBounds.min_y },
-        { x: mapBounds.max_x, y: mapBounds.max_y },
-        { x: mapBounds.min_x, y: mapBounds.max_y }
-      );
     }
   }
 
@@ -117,42 +93,43 @@ function palette(agent: AgentState): { marker: string; line: string; ghost: stri
   return { marker: "#38bdf8", line: "#0284c7", ghost: "#7dd3fc" };
 }
 
-function elementPalette(element: SceneElement): { fill: string; stroke: string } {
-  if (element.kind === "pedestrian") {
-    return {
-      fill: "rgba(16, 185, 129, 0.28)",
-      stroke: "rgba(52, 211, 153, 0.9)"
-    };
+function shortAgentClass(agent: AgentState): string {
+  const raw = (agent.raw_label ?? "").toLowerCase();
+  if (raw === "person" || raw === "pedestrian") {
+    return "PED";
   }
-
-  return {
-    fill: "rgba(56, 189, 248, 0.24)",
-    stroke: "rgba(125, 211, 252, 0.86)"
-  };
+  if (raw === "bicycle" || raw === "cyclist") {
+    return "CYC";
+  }
+  if (agent.type === "pedestrian") {
+    return "VRU";
+  }
+  return "VEH";
 }
 
-export default function BevCanvas({ agents, sceneGeometry }: Props) {
-  const bounds = useMemo(() => computeBounds(collectPoints(agents, sceneGeometry)), [agents, sceneGeometry]);
-  const hasSceneGeometry = Boolean(sceneGeometry && sceneGeometry.road_polygon.length >= 3);
-  const sceneQuality = clamp01(sceneGeometry?.quality ?? 0);
+function isPedestrianOrCyclist(agent: AgentState): boolean {
+  const raw = (agent.raw_label ?? "").toLowerCase();
+  if (raw === "person" || raw === "pedestrian" || raw === "bicycle" || raw === "cyclist") {
+    return true;
+  }
+  return agent.type === "pedestrian";
+}
+
+export default function BevCanvas({ agents }: Props) {
+  const bounds = useMemo(() => computeBounds(collectPoints(agents)), [agents]);
+  const vruDisplayIdByTrackId = useMemo(() => {
+    const map = new Map<number, number>();
+    agents
+      .filter((a) => isPedestrianOrCyclist(a))
+      .slice()
+      .sort((a, b) => a.id - b.id)
+      .forEach((a, idx) => {
+        map.set(a.id, idx + 1);
+      });
+    return map;
+  }, [agents]);
   const xTicks = useMemo(() => buildTicks(bounds.minX, bounds.maxX), [bounds.maxX, bounds.minX]);
   const yTicks = useMemo(() => buildTicks(bounds.minY, bounds.maxY), [bounds.maxY, bounds.minY]);
-  const mapLayer = sceneGeometry?.map_layer;
-
-  const mapRect = useMemo(() => {
-    if (!mapLayer) {
-      return null;
-    }
-
-    const topLeft = toSvgPoint({ x: mapLayer.bounds.min_x, y: mapLayer.bounds.max_y }, bounds);
-    const bottomRight = toSvgPoint({ x: mapLayer.bounds.max_x, y: mapLayer.bounds.min_y }, bounds);
-    return {
-      x: topLeft.x,
-      y: topLeft.y,
-      width: Math.max(1, bottomRight.x - topLeft.x),
-      height: Math.max(1, bottomRight.y - topLeft.y)
-    };
-  }, [bounds, mapLayer]);
 
   return (
     <div className="bev-shell">
@@ -172,18 +149,6 @@ export default function BevCanvas({ agents, sceneGeometry }: Props) {
         </defs>
 
         <rect x={0} y={0} width={WIDTH} height={HEIGHT} fill="url(#bevBg)" />
-
-        {mapLayer && mapRect && (
-          <image
-            href={`data:image/png;base64,${mapLayer.image_png_base64}`}
-            x={mapRect.x}
-            y={mapRect.y}
-            width={mapRect.width}
-            height={mapRect.height}
-            preserveAspectRatio="none"
-            opacity={clamp01(mapLayer.opacity ?? 0.55)}
-          />
-        )}
 
         <rect x={0} y={0} width={WIDTH} height={HEIGHT} fill="url(#gridPattern)" opacity={0.9} />
 
@@ -211,47 +176,6 @@ export default function BevCanvas({ agents, sceneGeometry }: Props) {
           );
         })}
 
-        {hasSceneGeometry ? (
-          <g>
-            <polygon
-              points={polyline(sceneGeometry!.road_polygon.map((p) => toSvgPoint(p, bounds)))}
-              fill="rgba(15, 23, 42, 0.34)"
-              stroke="rgba(148, 163, 184, 0.45)"
-              strokeWidth={1.4}
-            />
-
-            {(sceneGeometry?.lane_lines ?? []).map((line, idx) => (
-              <polyline
-                key={`lane-${idx}`}
-                points={polyline(line.map((p) => toSvgPoint(p, bounds)))}
-                fill="none"
-                stroke={idx % 2 === 0 ? "rgba(245, 158, 11, 0.72)" : "rgba(226, 232, 240, 0.72)"}
-                strokeWidth={1.2 + 1.3 * sceneQuality}
-                opacity={0.26 + 0.52 * sceneQuality}
-                strokeDasharray={idx % 2 === 0 ? "11 8" : "none"}
-              />
-            ))}
-
-            {(sceneGeometry?.elements ?? []).map((el, idx) => {
-              const colors = elementPalette(el);
-              return (
-                <polygon
-                  key={`el-${idx}`}
-                  points={polyline(el.polygon.map((p) => toSvgPoint(p, bounds)))}
-                  fill={colors.fill}
-                  stroke={colors.stroke}
-                  strokeWidth={1.0}
-                />
-              );
-            })}
-          </g>
-        ) : (
-          <g>
-            <rect x={WIDTH * 0.42} y={0} width={WIDTH * 0.16} height={HEIGHT} fill="rgba(15, 23, 42, 0.55)" />
-            <line x1={WIDTH * 0.5} y1={0} x2={WIDTH * 0.5} y2={HEIGHT} stroke="rgba(245, 158, 11, 0.78)" strokeDasharray="14 12" strokeWidth="2" />
-          </g>
-        )}
-
         {agents.map((agent) => {
           const colors = palette(agent);
           const history = agent.history.map((p) => toSvgPoint(p, bounds));
@@ -272,7 +196,10 @@ export default function BevCanvas({ agents, sceneGeometry }: Props) {
 
           const current = history[history.length - 1];
           const previous = history.length >= 2 ? history[history.length - 2] : current;
-          const label = agent.is_target ? `ID ${agent.id} TARGET` : `ID ${agent.id}`;
+          const kindTag = shortAgentClass(agent);
+          const vruDisplayId = vruDisplayIdByTrackId.get(agent.id);
+          const idText = vruDisplayId !== undefined ? `ID ${vruDisplayId}` : `TRK ${agent.id}`;
+          const label = agent.is_target ? `${idText} ${kindTag} TARGET` : `${idText} ${kindTag}`;
           const labelWidth = 10 + label.length * 6.4;
           const endPoint = bestPath[bestPath.length - 1];
           const vx = current && previous ? current.x - previous.x : 0;
@@ -341,7 +268,7 @@ export default function BevCanvas({ agents, sceneGeometry }: Props) {
         })}
 
         <g transform="translate(12, 12)">
-          <rect x={0} y={0} width={250} height={70} rx={8} fill="rgba(2, 6, 23, 0.65)" stroke="rgba(148, 163, 184, 0.32)" />
+          <rect x={0} y={0} width={250} height={82} rx={8} fill="rgba(2, 6, 23, 0.65)" stroke="rgba(148, 163, 184, 0.32)" />
           <text x={10} y={16} fill="#f8fafc" fontSize={11} fontWeight={700}>
             BEV Legend
           </text>
@@ -354,7 +281,10 @@ export default function BevCanvas({ agents, sceneGeometry }: Props) {
             Observed history
           </text>
           <text x={10} y={61} fill="rgba(226, 232, 240, 0.85)" fontSize={10}>
-            {mapLayer ? `HD map: ON (${mapLayer.source ?? "nuscenes"})` : "HD map: OFF"}
+            Map layer hidden for clarity.
+          </text>
+          <text x={10} y={74} fill="rgba(203, 213, 225, 0.72)" fontSize={9}>
+            VRU IDs are counted over pedestrian/cyclist only.
           </text>
         </g>
 

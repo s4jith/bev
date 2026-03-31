@@ -1,0 +1,22 @@
+Preset: best (Best benchmark (analyzed target))
+
+Trajectory metric interpretation
+--------------------------------
+Baseline -> Fusion ADE improvement: 35.38%
+Baseline -> Fusion FDE improvement: 42.22%
+Baseline -> Fusion Miss Rate improvement: 64.32%
+
+Camera -> Fusion ADE improvement: 16.00%
+Camera -> Fusion FDE improvement: 17.89%
+Camera -> Fusion Miss Rate improvement: 27.55%
+
+Runtime interpretation
+----------------------
+Detection share of end-to-end latency: 76.36%
+Transformer share of end-to-end latency: 15.45%
+Current cycle: 55.0 ms (18.2 FPS)
+Miss Rate 7.1% means about 1 in 14.1 trajectories still exceed 2.0m final error.
+
+Supporting CV metrics
+---------------------
+Analyzed best-case CV metric chart (target values)

@@ -14,6 +14,109 @@ const initialLiveReq: LiveFusionRequest = {
   use_pose: false
 };
 
+type DirectionLabel = "Straight" | "Left" | "Right" | "U-turn" | "Stop";
+
+type DirectionShare = {
+  direction: DirectionLabel;
+  probability: number;
+};
+
+type VruMovementSummary = {
+  displayId: number;
+  trackId: number;
+  actorLabel: string;
+  primaryDirection: DirectionLabel;
+  primaryProbability: number;
+  turnAngleDeg: number;
+  clockLabel: string;
+  distribution: DirectionShare[];
+};
+
+function normalizeVector(x: number, y: number): { x: number; y: number } {
+  const norm = Math.hypot(x, y);
+  if (norm < 1e-6) {
+    return { x: 0, y: 0 };
+  }
+  return { x: x / norm, y: y / norm };
+}
+
+function signedTurnAngleDeg(agent: AgentState, endPoint: { x: number; y: number }): number {
+  if (agent.history.length < 2) {
+    return 0;
+  }
+
+  const prev = agent.history[agent.history.length - 2];
+  const curr = agent.history[agent.history.length - 1];
+
+  const heading = normalizeVector(curr.x - prev.x, curr.y - prev.y);
+  const motion = normalizeVector(endPoint.x - curr.x, endPoint.y - curr.y);
+
+  const hx = heading.x === 0 && heading.y === 0 ? 0 : heading.x;
+  const hy = heading.x === 0 && heading.y === 0 ? 1 : heading.y;
+  const mx = motion.x;
+  const my = motion.y;
+
+  const cross = hx * my - hy * mx;
+  const dot = Math.max(-1, Math.min(1, hx * mx + hy * my));
+  return (Math.atan2(cross, dot) * 180) / Math.PI;
+}
+
+function classifyDirectionFromAngle(angleDeg: number, motionMag: number): DirectionLabel {
+  if (motionMag < 0.6) {
+    return "Stop";
+  }
+
+  if (Math.abs(angleDeg) >= 150) {
+    return "U-turn";
+  }
+
+  if (Math.abs(angleDeg) <= 20) {
+    return "Straight";
+  }
+
+  if (angleDeg > 20) {
+    return "Left";
+  }
+
+  return "Right";
+}
+
+function clockLabelFromEgo(point: { x: number; y: number }): string {
+  const angleCwDeg = ((Math.atan2(point.x, point.y) * 180) / Math.PI + 360) % 360;
+  let hour = Math.round(angleCwDeg / 30) % 12;
+  if (hour === 0) {
+    hour = 12;
+  }
+  return `${hour} o'clock`;
+}
+
+function formatTurnAngle(turnAngleDeg: number): string {
+  const absDeg = Math.abs(turnAngleDeg);
+  if (absDeg <= 10) {
+    return "0° (Straight)";
+  }
+  if (absDeg >= 150) {
+    return `${absDeg.toFixed(0)}° (U-turn)`;
+  }
+  return `${absDeg.toFixed(0)}° ${turnAngleDeg > 0 ? "Left" : "Right"}`;
+}
+
+function isPedestrianOrCyclist(agent: AgentState): boolean {
+  const raw = (agent.raw_label ?? "").toLowerCase();
+  if (raw === "person" || raw === "pedestrian" || raw === "bicycle" || raw === "cyclist") {
+    return true;
+  }
+  return agent.type === "pedestrian";
+}
+
+function actorLabel(agent: AgentState): string {
+  const raw = (agent.raw_label ?? "").toLowerCase();
+  if (raw === "bicycle" || raw === "cyclist") {
+    return "Cyclist";
+  }
+  return "Pedestrian";
+}
+
 export default function App() {
   const [mode, setMode] = useState<TabMode>("two-image");
   const [health, setHealth] = useState<HealthResponse | null>(null);
@@ -65,6 +168,84 @@ export default function App() {
   const agents = result?.agents ?? [];
   const sceneQuality = result?.scene_geometry?.quality;
 
+  const vruAgents = useMemo(() => {
+    return agents
+      .filter((agent) => isPedestrianOrCyclist(agent))
+      .slice()
+      .sort((a, b) => a.id - b.id);
+  }, [agents]);
+
+  const vruDisplayIdByTrackId = useMemo(() => {
+    const map = new Map<number, number>();
+    vruAgents.forEach((agent, idx) => {
+      map.set(agent.id, idx + 1);
+    });
+    return map;
+  }, [vruAgents]);
+
+  const vruDisplayIdRecord = useMemo<Record<number, number>>(() => {
+    const out: Record<number, number> = {};
+    vruDisplayIdByTrackId.forEach((displayId, trackId) => {
+      out[trackId] = displayId;
+    });
+    return out;
+  }, [vruDisplayIdByTrackId]);
+
+  const vruMovementSummaries = useMemo<VruMovementSummary[]>(() => {
+    return vruAgents.map((agent) => {
+      const curr = agent.history[agent.history.length - 1] ?? { x: 0, y: 0 };
+      const probs = agent.probabilities.slice(0, 3).map((p) => Number(p ?? 0));
+      const totalProb = probs.reduce((acc, p) => acc + p, 0);
+      const safeTotalProb = totalProb > 1e-6 ? totalProb : 1;
+
+      const bins: Record<DirectionLabel, number> = {
+        Straight: 0,
+        Left: 0,
+        Right: 0,
+        "U-turn": 0,
+        Stop: 0
+      };
+
+      let weightedEndX = 0;
+      let weightedEndY = 0;
+
+      agent.predictions.slice(0, 3).forEach((path, idx) => {
+        const end = path[path.length - 1] ?? curr;
+        const prob = probs[idx] ?? 0;
+        const motionMag = Math.hypot(end.x - curr.x, end.y - curr.y);
+        const angleDeg = signedTurnAngleDeg(agent, end);
+        const label = classifyDirectionFromAngle(angleDeg, motionMag);
+
+        bins[label] += prob;
+        weightedEndX += end.x * prob;
+        weightedEndY += end.y * prob;
+      });
+
+      const expectedEnd = totalProb > 1e-6
+        ? { x: weightedEndX / totalProb, y: weightedEndY / totalProb }
+        : curr;
+
+      const distribution = (Object.entries(bins) as Array<[DirectionLabel, number]>)
+        .map(([direction, probability]) => ({ direction, probability: probability / safeTotalProb }))
+        .filter((item) => item.probability > 0.001)
+        .sort((a, b) => b.probability - a.probability);
+
+      const primary = distribution[0] ?? { direction: "Stop" as DirectionLabel, probability: 0 };
+      const turnAngleDeg = signedTurnAngleDeg(agent, expectedEnd);
+
+      return {
+        displayId: vruDisplayIdByTrackId.get(agent.id) ?? agent.id,
+        trackId: agent.id,
+        actorLabel: actorLabel(agent),
+        primaryDirection: primary.direction,
+        primaryProbability: primary.probability,
+        turnAngleDeg,
+        clockLabel: clockLabelFromEgo(expectedEnd),
+        distribution
+      };
+    });
+  }, [vruAgents, vruDisplayIdByTrackId]);
+
   const targetSummary = useMemo(() => {
     if (!result) {
       return "No prediction yet.";
@@ -76,8 +257,14 @@ export default function App() {
     }
 
     const maxProb = target.probabilities.length ? Math.max(...target.probabilities) : 0;
-    return `Target ID ${target.id}, best mode confidence ${(maxProb * 100).toFixed(1)}%.`;
-  }, [result]);
+    const vruDisplayId = vruDisplayIdByTrackId.get(target.id);
+
+    if (vruDisplayId !== undefined) {
+      return `Target VRU ID ${vruDisplayId}, best mode confidence ${(maxProb * 100).toFixed(1)}%.`;
+    }
+
+    return `Target Track ${target.id}, best mode confidence ${(maxProb * 100).toFixed(1)}%.`;
+  }, [result, vruDisplayIdByTrackId]);
 
   async function runTwoImage() {
     if (!prevImage || !currImage) {
@@ -277,12 +464,39 @@ export default function App() {
               <p>Scene source: {result?.scene_geometry?.source ?? "n/a"}</p>
               <p>Scene quality: {sceneQuality !== undefined ? `${(sceneQuality * 100).toFixed(0)}%` : "n/a"}</p>
             </article>
+            <article className="vru-text-card">
+              <h3>Pedestrian and Cyclist Movement Possibilities</h3>
+              <p className="vru-note">VRU IDs below are counted only across pedestrian and cyclist tracks.</p>
+              {vruMovementSummaries.length === 0 ? (
+                <p>No pedestrian or cyclist track found yet.</p>
+              ) : (
+                <div className="vru-text-grid">
+                  {vruMovementSummaries.map((entry) => (
+                    <div key={`${entry.actorLabel}-${entry.trackId}`} className="vru-text-item">
+                      <h4>{entry.actorLabel} ID {entry.displayId}</h4>
+                      <p>
+                        Main direction: {entry.primaryDirection} ({(entry.primaryProbability * 100).toFixed(0)}%)
+                      </p>
+                      <p>Turn angle: {formatTurnAngle(entry.turnAngleDeg)}</p>
+                      <p>Direction from ego: {entry.clockLabel}</p>
+                      <p>
+                        Probability split: {entry.distribution
+                          .map((d) => `${d.direction} ${(d.probability * 100).toFixed(0)}%`)
+                          .join(" | ")}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
           </div>
 
           <CameraDetectionsPanel
             detections={result?.detections}
             prevImagePreview={prevImagePreview}
             currImagePreview={currImagePreview}
+            vruDisplayIdByTrackId={vruDisplayIdRecord}
+            targetTrackId={result?.target_track_id ?? null}
           />
         </section>
       </main>
