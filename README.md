@@ -71,8 +71,8 @@ The fusion variant (`backend/app/ml/model_fusion.py`) extends the base model wit
 **Target classes:** pedestrian, bicycle, motorcycle
 
 **Windowing:**
-- 4 observed timesteps as input
-- 12 predicted future timesteps as output (6 seconds at 2 Hz annotation rate)
+- Takes a 2-second history of motion as input.
+- Outputs K=3 multimodal trajectory predictions over a 3-second prediction horizon, each with an associated probability score.
 
 **Input features per observed step:**
 - x, y position (BEV meters)
@@ -120,12 +120,11 @@ The fusion variant (`backend/app/ml/model_fusion.py`) extends the base model wit
 
 | Stage | Latency |
 |---|---|
-| Detection model (per frame) | 86.39 ms |
-| Keypoint model (per frame) | 144.68 ms |
-| Sensor fusion lookup | 13.86 ms |
-| Transformer prediction head | 5.11 ms |
-| Full 2-frame loop (approximate) | 361.96 ms |
-| Equivalent throughput | ~2.76 FPS |
+| Detection model (per frame) | 52.7 ms |
+| Sensor fusion lookup | 16 ms |
+| Transformer prediction head | 18.6 ms |
+|Full 2-frame loop (approximate) | 137.3 ms |
+| Equivalent throughput | ~7.28 FPS |
 
 ---
 
@@ -302,14 +301,21 @@ The prediction endpoint returns a structured payload including multimodal trajec
 ### Validation Metrics Output
 
 ```
-Epoch 47
 Train Loss: 2.1834
 ADE: 0.5491, FDE: 1.0873
 Current Learning Rate: 0.0005
-New best model found! ADE improved from 0.5534 to 0.5491
+Transformer parameters: ~146K (very lightweight)
+Checkpoint size:
+Base: ~0.6 MB
+Fusion: ~0.6 MB
 ```
 
----
+### Output
+
+![Output visualization](public/output.jpeg)
+![Output visualization2](public/output2.png)
+![Output visualization3](public/output4.png)
+![Output visualization4](public/output3.png)
 
 
 
