@@ -9,5 +9,5 @@ frontend/node_modules
 frontend/dist
 frontend/.vite
 frontend/*.tsbuildinfo
-
+backup_readme.md
 logs/ppt_metric_pages
